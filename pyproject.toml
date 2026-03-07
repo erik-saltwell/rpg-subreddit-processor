@@ -3,11 +3,16 @@ name = "rpg-subreddit-processor"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Erik Saltwell", email = "erik.saltwell@gmail.com" },
-]
+authors = [{ name = "Erik Saltwell", email = "erik.saltwell@gmail.com" }]
 requires-python = ">=3.11"
-dependencies = ["python-dotenv>=1.2.1", "rich>=14.2.0", "typer>=0.21.1"]
+dependencies = [
+    "datasets>=4.5.0",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
+    "rich>=14.2.0",
+    "lmdb",
+    "typer>=0.21.1",
+]
 
 [project.scripts]
 rpg-subreddit-processor = "rpg_subreddit_processor.console:main.app"

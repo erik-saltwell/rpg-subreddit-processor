@@ -1,0 +1,207 @@
+from __future__ import annotations
+
+import json
+from collections.abc import Generator, Iterable, Iterator, MutableSequence
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, ClassVar, SupportsIndex, cast, overload
+
+from .reddit_node import RedditNode
+
+
+@dataclass(frozen=False, eq=True)
+class Subreddit(MutableSequence["RedditNode"]):
+    ROOT_ID: ClassVar[int] = -1
+    name: str
+    _root: RedditNode = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        # Create a *fresh* root per instance, with a fresh timestamp.
+        self._root = RedditNode(
+            self.ROOT_ID,
+            self.ROOT_ID,
+            self.ROOT_ID,
+            self.ROOT_ID,
+            datetime.now(UTC),
+            self.ROOT_ID,
+            self.ROOT_ID,
+        )
+
+    def insert(self, index: int, value: RedditNode) -> None:
+        """Insert a child node at the given position.
+
+        Args:
+            index: Position to insert the child node.
+            value: RedditNode to insert.
+        """
+        self._root.insert(index, value)
+
+    def to_json_string(self) -> str:
+        """Serialize a Subreddit to a JSON string.
+
+        Args:
+            subreddit: The Subreddit instance to serialize.
+
+        Returns:
+            JSON string representation of the subreddit.
+        """
+
+        def node_to_dict(node: RedditNode) -> dict[str, Any]:
+            """Recursively convert a RedditNode and its children to a dict."""
+            return {
+                "item_id": node.item_id,
+                "author_id": node.author_id,
+                "text_id": node.text_id,
+                "parent_id": node.parent_id,
+                "created_utc": node.created_utc.isoformat(),
+                "ups": node.ups,
+                "downs": node.downs,
+                "children": [node_to_dict(child) for child in node.children],
+            }
+
+        data = {
+            "name": self.name,
+            "root": node_to_dict(self._root),
+        }
+        return json.dumps(data, indent=2)
+
+    def to_json_file(self, filepath: Path) -> None:
+        """Write the Subreddit to a JSON file.
+
+        Args:
+            filepath: The path where the JSON file should be written.
+        """
+        json_string = self.to_json_string()
+        filepath.write_text(json_string)
+
+    @classmethod
+    def from_node_list(cls, nodes: Iterator[RedditNode], subreddit_name: str) -> Subreddit:
+        all_nodes: dict[int, RedditNode] = {}
+        for node in nodes:
+            all_nodes[node.item_id] = node
+        subreddit: Subreddit = Subreddit(subreddit_name)
+        for node in all_nodes.values():
+            if node.is_root():
+                node.set_parent(subreddit._root)
+            else:
+                parent: RedditNode | None = all_nodes.get(node.parent_id)
+                if parent is not None:
+                    node.set_parent(parent)
+        return subreddit
+
+    @classmethod
+    def from_json_string(cls, text: str) -> Subreddit:
+        def dict_to_node(node_dict: dict[str, Any]) -> RedditNode:
+            """Recursively convert a dict to a RedditNode with children."""
+            node = RedditNode(
+                item_id=node_dict["item_id"],
+                author_id=node_dict["author_id"],
+                text_id=node_dict["text_id"],
+                parent_id=node_dict["parent_id"],
+                created_utc=datetime.fromisoformat(node_dict["created_utc"]),
+                ups=node_dict["ups"],
+                downs=node_dict["downs"],
+            )
+
+            for child_dict in node_dict["children"]:
+                child = dict_to_node(child_dict)
+                child.parent = node
+                node.children.append(child)
+            return node
+
+        data = json.loads(text)
+        subreddit = cls.__new__(cls)
+        subreddit.name = data["name"]
+        subreddit._root = dict_to_node(data["root"])
+        return subreddit
+
+    @classmethod
+    def from_json_file(cls, filepath: Path) -> Subreddit:
+        """Load a Subreddit from a JSON file.
+
+        Args:
+            filepath: The path to the JSON file to read.
+
+        Returns:
+            A Subreddit instance loaded from the file.
+        """
+        json_string = filepath.read_text()
+        return cls.from_json_string(json_string)
+
+    def breadth_first_traversal(self) -> Generator[RedditNode, None, None]:
+        """BFS over the subtree under _root, but skip yielding the root node itself."""
+        it: Generator[RedditNode, None, None] = self._root.breadth_first_traversal()
+
+        # Consume the first item (the root) if present
+        next(it, None)
+
+        # Yield the remaining nodes
+        yield from it
+
+    def sort_recursive(self) -> None:
+        for node in self.breadth_first_traversal():
+            node.children.sort()
+        self._root.children.sort()
+
+    def print(self) -> None:
+        for node in self.breadth_first_traversal():
+            assert node.parent is not None
+            print(f"{node.parent.item_id}->{node.item_id}")
+
+    def post_count(self) -> int:
+        """Return the number of posts (direct children of the root)."""
+        return len(self._root)
+
+    def comment_count(self) -> int:
+        """Return the number of comments (all descendants minus posts)."""
+        return self._root.count_all_descendants() - self.post_count()
+
+    def prune_nodes(self, nodes_to_delete: Iterable[RedditNode]) -> None:
+        for node in nodes_to_delete:
+            node.detach()
+
+    @overload
+    def __getitem__(self, index: SupportsIndex) -> RedditNode: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> list[RedditNode]: ...
+
+    def __getitem__(self, index: SupportsIndex | slice) -> RedditNode | list[RedditNode]:
+        # Narrowing makes mypy pick the right overload on RedditNode.__getitem__
+        if isinstance(index, slice):
+            return self._root[index]
+        return self._root[index]
+
+    @overload
+    def __setitem__(self, index: SupportsIndex, value: RedditNode) -> None: ...
+
+    @overload
+    def __setitem__(self, index: slice, value: Iterable[RedditNode]) -> None: ...
+
+    def __setitem__(
+        self,
+        index: SupportsIndex | slice,
+        value: RedditNode | Iterable[RedditNode],
+    ) -> None:
+        # Narrow both unions so mypy can match the correct __setitem__ overload.
+        if isinstance(index, slice):
+            self._root[index] = value
+        else:
+            self._root[index] = cast(RedditNode, value)
+
+    def __delitem__(self, index: int | slice) -> None:
+        """Delete child node(s) at the given index.
+
+        Args:
+            index: Integer index or slice for deleting children.
+        """
+        del self._root[index]
+
+    def __len__(self) -> int:
+        """Return the number of children.
+
+        Returns:
+            Count of direct children nodes.
+        """
+        return len(self._root)
