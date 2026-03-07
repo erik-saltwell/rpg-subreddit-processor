@@ -25,9 +25,11 @@ build-backend = "uv_build"
 dev = [
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
+    "pyright>=1.1.408",
     "pytest>=9.0.2",
     "ruff>=0.14.13",
     "ssort>=0.16.0",
+    "types-pyyaml>=6.0.12.20250915",
 ]
 
 
