@@ -1,0 +1,50 @@
+{"author":"user2","body":"Great post!","created_utc":1704067210,"id":"comment001","link_id":"t3_post001","parent_id":"t3_post001","score":5}
+{"author":"user3","body":"I agree with this.","created_utc":1704067220,"id":"comment002","link_id":"t3_post001","parent_id":"t3_post001","score":3}
+{"author":"user1","body":"Thanks for the feedback!","created_utc":1704067230,"id":"comment003","link_id":"t3_post001","parent_id":"t1_comment001","score":2}
+{"author":"user4","body":"Interesting perspective.","created_utc":1704067240,"id":"comment004","link_id":"t3_post001","parent_id":"t1_comment002","score":1}
+{"author":"user5","body":"This is a deeply nested reply.","created_utc":1704067250,"id":"comment005","link_id":"t3_post001","parent_id":"t1_comment004","score":1}
+{"author":"user3","body":"Nice post!","created_utc":1704067310,"id":"comment006","link_id":"t3_post002","parent_id":"t3_post002","score":4}
+{"author":"user4","body":"I have a question about this.","created_utc":1704067320,"id":"comment007","link_id":"t3_post002","parent_id":"t3_post002","score":2}
+{"author":"user2","body":"Let me answer that.","created_utc":1704067330,"id":"comment008","link_id":"t3_post002","parent_id":"t1_comment007","score":3}
+{"author":"user1","body":"Thanks for clarifying.","created_utc":1704067340,"id":"comment009","link_id":"t3_post002","parent_id":"t1_comment008","score":1}
+{"author":"user6","body":"Commenting on link post.","created_utc":1704067410,"id":"comment010","link_id":"t3_post003","parent_id":"t3_post003","score":2}
+{"author":"user7","body":"First comment on post 4.","created_utc":1704067510,"id":"comment011","link_id":"t3_post004","parent_id":"t3_post004","score":6}
+{"author":"user8","body":"Second comment on post 4.","created_utc":1704067520,"id":"comment012","link_id":"t3_post004","parent_id":"t3_post004","score":4}
+{"author":"user9","body":"Reply to comment 11.","created_utc":1704067530,"id":"comment013","link_id":"t3_post004","parent_id":"t1_comment011","score":2}
+{"author":"user7","body":"Reply to comment 12.","created_utc":1704067540,"id":"comment014","link_id":"t3_post004","parent_id":"t1_comment012","score":1}
+{"author":"user10","body":"Deep reply to comment 13.","created_utc":1704067550,"id":"comment015","link_id":"t3_post004","parent_id":"t1_comment013","score":1}
+{"author":"user4","body":"Comment on post 5.","created_utc":1704067610,"id":"comment016","link_id":"t3_post005","parent_id":"t3_post005","score":1}
+{"author":"user5","body":"Another comment on post 5.","created_utc":1704067620,"id":"comment017","link_id":"t3_post005","parent_id":"t3_post005","score":2}
+{"author":"user6","body":"Reply to comment 16.","created_utc":1704067630,"id":"comment018","link_id":"t3_post005","parent_id":"t1_comment016","score":1}
+{"author":"user1","body":"Comment on post 6.","created_utc":1704067710,"id":"comment019","link_id":"t3_post006","parent_id":"t3_post006","score":3}
+{"author":"user2","body":"Second comment on post 6.","created_utc":1704067720,"id":"comment020","link_id":"t3_post006","parent_id":"t3_post006","score":2}
+{"author":"user3","body":"Reply to comment 19.","created_utc":1704067730,"id":"comment021","link_id":"t3_post006","parent_id":"t1_comment019","score":1}
+{"author":"user8","body":"Comment on post 7.","created_utc":1704067810,"id":"comment022","link_id":"t3_post007","parent_id":"t3_post007","score":2}
+{"author":"user9","body":"Second comment on post 7.","created_utc":1704067820,"id":"comment023","link_id":"t3_post007","parent_id":"t3_post007","score":1}
+{"author":"user10","body":"Reply to comment 22.","created_utc":1704067830,"id":"comment024","link_id":"t3_post007","parent_id":"t1_comment022","score":1}
+{"author":"user11","body":"Deep reply to comment 24.","created_utc":1704067840,"id":"comment025","link_id":"t3_post007","parent_id":"t1_comment024","score":1}
+{"author":"user1","body":"Comment with emoji 🎉","created_utc":1704067910,"id":"comment026","link_id":"t3_post008","parent_id":"t3_post008","score":4}
+{"author":"user2","body":"Another emoji comment 🚀","created_utc":1704067920,"id":"comment027","link_id":"t3_post008","parent_id":"t3_post008","score":2}
+{"author":"user3","body":"Reply with emoji 😊","created_utc":1704067930,"id":"comment028","link_id":"t3_post008","parent_id":"t1_comment026","score":1}
+{"author":"user12","body":"Comment on post 9.","created_utc":1704068010,"id":"comment029","link_id":"t3_post009","parent_id":"t3_post009","score":5}
+{"author":"user13","body":"Second comment on post 9.","created_utc":1704068020,"id":"comment030","link_id":"t3_post009","parent_id":"t3_post009","score":3}
+{"author":"user1","body":"Reply to comment 29 (testing author dedup).","created_utc":1704068030,"id":"comment031","link_id":"t3_post009","parent_id":"t1_comment029","score":2}
+{"author":"user14","body":"Comment on post 10.","created_utc":1704068110,"id":"comment032","link_id":"t3_post010","parent_id":"t3_post010","score":3}
+{"author":"user15","body":"Second comment on post 10.","created_utc":1704068120,"id":"comment033","link_id":"t3_post010","parent_id":"t3_post010","score":2}
+{"author":"user16","body":"Reply to comment 32.","created_utc":1704068130,"id":"comment034","link_id":"t3_post010","parent_id":"t1_comment032","score":1}
+{"author":"user17","body":"Reply to comment 33.","created_utc":1704068140,"id":"comment035","link_id":"t3_post010","parent_id":"t1_comment033","score":1}
+{"author":"user18","body":"Deep reply to comment 34.","created_utc":1704068150,"id":"comment036","link_id":"t3_post010","parent_id":"t1_comment034","score":1}
+{"author":"user1","body":"Testing repeated author across posts.","created_utc":1704068160,"id":"comment037","link_id":"t3_post010","parent_id":"t3_post010","score":2}
+{"author":"user2","body":"Another repeated author comment.","created_utc":1704068170,"id":"comment038","link_id":"t3_post010","parent_id":"t3_post010","score":1}
+{"author":"user3","body":"Third repeated author.","created_utc":1704068180,"id":"comment039","link_id":"t3_post010","parent_id":"t1_comment037","score":1}
+{"author":"user4","body":"Fourth repeated author.","created_utc":1704068190,"id":"comment040","link_id":"t3_post010","parent_id":"t1_comment038","score":1}
+{"author":"user5","body":"Fifth repeated author comment.","created_utc":1704068200,"id":"comment041","link_id":"t3_post001","parent_id":"t1_comment003","score":1}
+{"author":"user6","body":"Sixth repeated author comment.","created_utc":1704068210,"id":"comment042","link_id":"t3_post002","parent_id":"t1_comment009","score":1}
+{"author":"user7","body":"Seventh repeated author comment.","created_utc":1704068220,"id":"comment043","link_id":"t3_post004","parent_id":"t1_comment015","score":1}
+{"author":"user8","body":"Eighth repeated author comment.","created_utc":1704068230,"id":"comment044","link_id":"t3_post007","parent_id":"t1_comment025","score":1}
+{"author":"user9","body":"Ninth repeated author comment.","created_utc":1704068240,"id":"comment045","link_id":"t3_post004","parent_id":"t1_comment014","score":1}
+{"author":"user10","body":"Tenth repeated author comment.","created_utc":1704068250,"id":"comment046","link_id":"t3_post007","parent_id":"t1_comment023","score":1}
+{"author":"user11","body":"Eleventh repeated author comment.","created_utc":1704068260,"id":"comment047","link_id":"t3_post009","parent_id":"t1_comment031","score":1}
+{"author":"user12","body":"Twelfth repeated author comment.","created_utc":1704068270,"id":"comment048","link_id":"t3_post009","parent_id":"t1_comment030","score":1}
+{"author":"user13","body":"Thirteenth repeated author comment.","created_utc":1704068280,"id":"comment049","link_id":"t3_post010","parent_id":"t1_comment036","score":1}
+{"author":"user14","body":"Fourteenth repeated author comment.","created_utc":1704068290,"id":"comment050","link_id":"t3_post010","parent_id":"t1_comment035","score":1}

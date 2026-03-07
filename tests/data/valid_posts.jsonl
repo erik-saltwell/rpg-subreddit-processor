@@ -1,0 +1,10 @@
+{"author":"user1","created_utc":1704067200,"id":"post001","score":42,"selftext":"This is the first test post with some interesting content.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"First Test Post"}
+{"author":"user2","created_utc":1704067300,"id":"post002","score":15,"selftext":"Second post discussing various topics.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Second Test Post"}
+{"author":"user1","created_utc":1704067400,"id":"post003","score":7,"selftext":"","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Link Post with No Body"}
+{"author":"user3","created_utc":1704067500,"id":"post004","score":28,"selftext":"Fourth post with multiple paragraphs.\n\nThis is a second paragraph.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Multi-Paragraph Post"}
+{"author":"user2","created_utc":1704067600,"id":"post005","score":3,"selftext":"Fifth test post.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Fifth Post"}
+{"author":"user4","created_utc":1704067700,"id":"post006","score":19,"selftext":"Sixth post for testing.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Sixth Test Post"}
+{"author":"user3","created_utc":1704067800,"id":"post007","score":11,"selftext":"Seventh post content.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Seventh Post"}
+{"author":"user5","created_utc":1704067900,"id":"post008","score":5,"selftext":"Eighth post with emojis 🎉🚀","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Post with Emojis"}
+{"author":"user1","created_utc":1704068000,"id":"post009","score":33,"selftext":"Ninth post testing author deduplication.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Ninth Post (Same Author as Post 1)"}
+{"author":"user6","created_utc":1704068100,"id":"post010","score":12,"selftext":"Tenth and final test post.","subreddit":"test_subreddit","subreddit_id":"t5_test","title":"Tenth Post"}

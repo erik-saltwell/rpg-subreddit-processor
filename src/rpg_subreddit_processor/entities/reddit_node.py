@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Generator, Iterable, MutableSequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import SupportsIndex, cast, overload
 
 from rpg_subreddit_processor.utils.key_value_store import (
@@ -46,7 +46,7 @@ class RedditNode(MutableSequence["RedditNode"]):
             author_id=0,
             text_id=0,
             parent_id=ROOT_NODE_PARENT_ID,
-            created_utc=datetime.fromtimestamp(0),
+            created_utc=datetime.fromtimestamp(0, tz=UTC),
             ups=0,
             downs=0,
         )
@@ -64,7 +64,7 @@ class RedditNode(MutableSequence["RedditNode"]):
         return self.parent_id == ROOT_NODE_PARENT_ID
 
     def is_leaf(self) -> bool:
-        return len(self) > 0
+        return len(self) == 0
 
     def breadth_first_traversal(self) -> Generator[RedditNode, None, None]:
         """Iterate over this node and all children nodes in breadth-first order.
@@ -87,25 +87,14 @@ class RedditNode(MutableSequence["RedditNode"]):
             index: Position to insert the child node.
             value: RedditNode to insert.
         """
+        value.update_parent(self)
         self.children.insert(index, value)
-
-    def set_parent(self, parent: RedditNode, update_parentID: bool = False) -> None:
-        self.parent = parent
-        self.parent.append(self)
-        if update_parentID:
-            self.parent_id = parent.item_id
-
-    def detach(self) -> None:
-        if self.parent is not None:
-            self.parent.remove(self)  # Remove self from parent's children list
-        self.parent = None
 
     def get_root(self) -> RedditNode:
         if self.is_root():
             return self
         potential_root: RedditNode = self
         while not potential_root.is_root():
-            assert potential_root is not None
             assert potential_root.parent is not None
             potential_root = potential_root.parent
         return potential_root
@@ -116,10 +105,7 @@ class RedditNode(MutableSequence["RedditNode"]):
         Returns:
             Total number of descendant nodes, not including this node.
         """
-        count = 0
-        for _ in self.breadth_first_traversal():
-            count += 1
-        return count - 1  # Subtract 1 to exclude self
+        return sum(1 for _ in self.breadth_first_traversal()) - 1
 
     def depth(self) -> int:
         """Compute the depth of this node in the tree.
@@ -127,19 +113,28 @@ class RedditNode(MutableSequence["RedditNode"]):
         Returns:
             The depth, where root nodes have depth 0.
         """
-        d = 0
-        node = self
-        while node.parent is not None and not node.parent.is_root():
-            d += 1
-            node = node.parent
-        return d
-
-    def ancestors(self) -> Generator[RedditNode]:
-        node = self
-        while node is not None and node.parent_id > 0:
-            yield node
+        node: RedditNode = self
+        depth = 0
+        while not node.is_root():
+            depth = depth + 1
             assert node.parent is not None
             node = node.parent
+        return depth
+
+    def ancestors(self) -> Generator[RedditNode, None, None]:
+        node: RedditNode = self
+        while not node.is_root():
+            assert node.parent is not None
+            node = node.parent
+            yield node
+
+    def _clear_parent(self) -> None:
+        self.parent = None
+        self.parent_id = ROOT_NODE_PARENT_ID
+
+    def update_parent(self, parent: RedditNode) -> None:
+        self.parent = parent
+        self.parent_id = parent.item_id
 
     @overload
     def __getitem__(self, index: SupportsIndex) -> RedditNode: ...
@@ -162,9 +157,17 @@ class RedditNode(MutableSequence["RedditNode"]):
         value: RedditNode | Iterable[RedditNode],
     ) -> None:
         if isinstance(index, slice):
-            self.children[index] = value
+            for child in self.children[index]:
+                child._clear_parent()
+            new_children = list(cast(Iterable[RedditNode], value))  # type: ignore
+            for child in new_children:
+                child.update_parent(self)
+            self.children[index] = new_children
         else:
-            self.children[index] = cast(RedditNode, value)
+            self.children[index]._clear_parent()
+            new_child = cast(RedditNode, value)
+            new_child.update_parent(self)
+            self.children[index] = new_child
 
     def __delitem__(self, index: int | slice) -> None:
         """Delete child node(s) at the given index.
@@ -172,6 +175,13 @@ class RedditNode(MutableSequence["RedditNode"]):
         Args:
             index: Integer index or slice for deleting children.
         """
+        targets = self.children[index]
+        if isinstance(targets, RedditNode):
+            targets._clear_parent()
+        else:
+            for child in targets:
+                child._clear_parent()
+
         del self.children[index]
 
     def __len__(self) -> int:

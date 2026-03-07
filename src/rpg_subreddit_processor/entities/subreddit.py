@@ -5,48 +5,32 @@ from collections.abc import Generator, Iterable, Iterator, MutableSequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar, SupportsIndex, cast, overload
+from typing import Any, SupportsIndex, cast, overload
 
-from .reddit_node import RedditNode
+from .reddit_node import ROOT_NODE_PARENT_ID, RedditNode
 
 
 @dataclass(frozen=False, eq=True)
 class Subreddit(MutableSequence["RedditNode"]):
-    ROOT_ID: ClassVar[int] = -1
     name: str
     _root: RedditNode = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # Create a *fresh* root per instance, with a fresh timestamp.
         self._root = RedditNode(
-            self.ROOT_ID,
-            self.ROOT_ID,
-            self.ROOT_ID,
-            self.ROOT_ID,
+            ROOT_NODE_PARENT_ID,
+            ROOT_NODE_PARENT_ID,
+            ROOT_NODE_PARENT_ID,
+            ROOT_NODE_PARENT_ID,
             datetime.now(UTC),
-            self.ROOT_ID,
-            self.ROOT_ID,
+            ROOT_NODE_PARENT_ID,
+            ROOT_NODE_PARENT_ID,
         )
 
     def insert(self, index: int, value: RedditNode) -> None:
-        """Insert a child node at the given position.
-
-        Args:
-            index: Position to insert the child node.
-            value: RedditNode to insert.
-        """
         self._root.insert(index, value)
 
     def to_json_string(self) -> str:
-        """Serialize a Subreddit to a JSON string.
-
-        Args:
-            subreddit: The Subreddit instance to serialize.
-
-        Returns:
-            JSON string representation of the subreddit.
-        """
-
         def node_to_dict(node: RedditNode) -> dict[str, Any]:
             """Recursively convert a RedditNode and its children to a dict."""
             return {
@@ -67,27 +51,25 @@ class Subreddit(MutableSequence["RedditNode"]):
         return json.dumps(data, indent=2)
 
     def to_json_file(self, filepath: Path) -> None:
-        """Write the Subreddit to a JSON file.
-
-        Args:
-            filepath: The path where the JSON file should be written.
-        """
         json_string = self.to_json_string()
         filepath.write_text(json_string)
 
     @classmethod
     def from_node_list(cls, nodes: Iterator[RedditNode], subreddit_name: str) -> Subreddit:
+        # We know that we will get orphans because of the great reddit data blackout.
+        # This drops the orphans intenionally.
+
         all_nodes: dict[int, RedditNode] = {}
         for node in nodes:
             all_nodes[node.item_id] = node
         subreddit: Subreddit = Subreddit(subreddit_name)
         for node in all_nodes.values():
             if node.is_root():
-                node.set_parent(subreddit._root)
+                subreddit._root.append(node)
             else:
                 parent: RedditNode | None = all_nodes.get(node.parent_id)
                 if parent is not None:
-                    node.set_parent(parent)
+                    parent.append(node)
         return subreddit
 
     @classmethod
@@ -106,26 +88,16 @@ class Subreddit(MutableSequence["RedditNode"]):
 
             for child_dict in node_dict["children"]:
                 child = dict_to_node(child_dict)
-                child.parent = node
-                node.children.append(child)
+                node.append(child)
             return node
 
         data = json.loads(text)
-        subreddit = cls.__new__(cls)
-        subreddit.name = data["name"]
+        subreddit = cls(data["name"])
         subreddit._root = dict_to_node(data["root"])
         return subreddit
 
     @classmethod
     def from_json_file(cls, filepath: Path) -> Subreddit:
-        """Load a Subreddit from a JSON file.
-
-        Args:
-            filepath: The path to the JSON file to read.
-
-        Returns:
-            A Subreddit instance loaded from the file.
-        """
         json_string = filepath.read_text()
         return cls.from_json_string(json_string)
 
@@ -140,11 +112,11 @@ class Subreddit(MutableSequence["RedditNode"]):
         yield from it
 
     def sort_recursive(self) -> None:
+        self._root.children.sort()
         for node in self.breadth_first_traversal():
             node.children.sort()
-        self._root.children.sort()
 
-    def print(self) -> None:
+    def print_tree(self) -> None:
         for node in self.breadth_first_traversal():
             assert node.parent is not None
             print(f"{node.parent.item_id}->{node.item_id}")
@@ -158,8 +130,10 @@ class Subreddit(MutableSequence["RedditNode"]):
         return self._root.count_all_descendants() - self.post_count()
 
     def prune_nodes(self, nodes_to_delete: Iterable[RedditNode]) -> None:
-        for node in nodes_to_delete:
-            node.detach()
+        for node in list(nodes_to_delete):
+            if not node.is_root():
+                assert node.parent is not None
+                node.parent.remove(node)
 
     @overload
     def __getitem__(self, index: SupportsIndex) -> RedditNode: ...
