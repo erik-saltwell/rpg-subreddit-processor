@@ -1,27 +1,26 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
+_DATA_DIR: Path = Path("data")
+_FRAGMENTS_DIR: Path = Path("fragments")
+_ARCTIC_SHIFT_DIR: Path = Path("arctic_shift")
+_INITIAL_SUBREDDIT_TREES_DIR: Path = Path("initial_subreddit_trees")
 
-@dataclass
-class CommonPaths:
-    """Resolves and ensures standard project directory paths for a given target mode."""
 
-    DATA_DIR: Path = Path("data")
-    FRAGMENTS_DIR: Path = Path("fragments")
+def data_path() -> Path:
+    """Return the path to the computed datasets directory under outputs."""
+    return _DATA_DIR
 
-    @property
-    def data(self) -> Path:
-        """Return the path to the computed datasets directory under outputs."""
-        return self.DATA_DIR
 
-    @property
-    def fragments(self) -> Path:
-        """Return the shared fragments directory path."""
-        return self.FRAGMENTS_DIR
+def fragments_path() -> Path:
+    """Return the shared fragments directory path."""
+    return _FRAGMENTS_DIR
 
-    @staticmethod
-    def get() -> CommonPaths:
-        """static constructor to create a CommonPaths object."""
-        return CommonPaths()
+
+def arctic_shift_path() -> Path:
+    return data_path() / _ARCTIC_SHIFT_DIR
+
+
+def initial_subreddit_trees_path() -> Path:
+    return data_path() / _INITIAL_SUBREDDIT_TREES_DIR
