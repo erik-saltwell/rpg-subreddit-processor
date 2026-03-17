@@ -136,7 +136,8 @@ class Subreddit(MutableSequence["RedditNode"]):
                     node.downs,
                 ]
             )
-        return bytes(msgpack.packb([self.name, records], use_bin_type=True))
+        packed = cast(bytes, msgpack.packb([self.name, records], use_bin_type=True))
+        return packed
 
     def to_msgpack_file(self, filepath: Path, logger: LoggingProtocol = NullLogger()) -> None:  # noqa: B008
         total = self._root.count_all_descendants()
