@@ -5,7 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "--test",
+            "name": "-convert",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "rpg_subreddit_processor",
+            "console": "integratedTerminal",
+            "args": [
+                "convert-arctic-shift-data",
+                "--subreddit",
+                "alienrpg"
+            ]
+        },
+        {
+            "name": "-test",
             "type": "debugpy",
             "request": "launch",
             "module": "rpg_subreddit_processor",

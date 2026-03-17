@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from importlib.metadata import PackageNotFoundError, metadata
 from importlib.metadata import version as dist_version
 
@@ -9,7 +10,13 @@ import typer
 from dotenv import load_dotenv
 from rich.console import Console
 
+from rpg_subreddit_processor.arctic_shift import iter_subreddit_file_pairs, validate_arctic_shift_directory
+from rpg_subreddit_processor.protocols import CompositeLogger, LoggingProtocol
 from rpg_subreddit_processor.utils.logging_config import configure_logging
+
+from ..commands.convert_arctic_shift_data import ConvertArcticShiftData
+from .file_logging_protocol import FileLogger
+from .rich_logging_protocol import RichConsoleLogger
 
 load_dotenv()
 configure_logging()
@@ -20,12 +27,48 @@ app = typer.Typer(
     help="CLI for rpg-subreddit-processor",
 )
 
+LOG_FILENAME: str = "rpg_subreddit_processor.log"
+
+
+def create_logger() -> LoggingProtocol:
+    console = Console()
+    console_logger: RichConsoleLogger = RichConsoleLogger(console)
+    file_logger: FileLogger = FileLogger(LOG_FILENAME, verbose_training=True)
+    return CompositeLogger([console_logger, file_logger])
+
+
+def seconds_since(start: datetime) -> float:
+    return (datetime.now() - start).total_seconds()
+
 
 @app.command("test")
 def test() -> None:
     """Simple smoke command."""
     console = Console()
     console.print("[green]Hello from test[/green]")
+
+
+@app.command("convert-arctic-shift-data")
+def convert_arctic_shift_data(
+    subreddit: str | None = typer.Option(
+        None,
+        "--subreddit",
+        "-s",
+        help="Optional subreddit to process. If omitted, all discovered subreddits are processed.",
+    ),
+) -> None:
+    """Covert arctic shift data to an inteernal json format."""
+    validate_arctic_shift_directory()
+
+    command = ConvertArcticShiftData()
+    subreddits: list[str] = []
+    if subreddit:
+        subreddits.append(subreddit)
+    else:
+        subreddits.extend([pair.subreddit for pair in iter_subreddit_file_pairs()])
+
+    command.subreddits = subreddits
+    command.execute(create_logger())
 
 
 def _version_callback(value: bool) -> None:

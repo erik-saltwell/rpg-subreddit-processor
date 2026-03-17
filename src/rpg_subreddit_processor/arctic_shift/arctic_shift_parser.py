@@ -2,12 +2,20 @@ import json
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import NamedTuple
 
 from rpg_subreddit_processor.entities import ROOT_NODE_PARENT_ID, RedditNode
 from rpg_subreddit_processor.utils import KeyValueStoreTransaction
+from rpg_subreddit_processor.utils.common_paths import arctic_shift_path
 
 from .arctic_shift_comment import ArcticShiftComment
 from .arctic_shift_post import ArcticShiftPost
+
+
+class SubredditFilePair(NamedTuple):
+    subreddit: str
+    posts_path: Path
+    comments_path: Path
 
 
 def _parse_arctic_shift_posts(file_path: str | Path) -> Iterator[ArcticShiftPost]:
@@ -152,6 +160,72 @@ def node_from_comment(
     ups: int = comment.ups or 0
     downs: int = comment.downs or 0
     return RedditNode(item_id, author_id, body_id, parent_id, created_at, ups, downs)
+
+
+def _validate_subreddit_file_pairs_internal(
+    posts_subreddits: dict[str, Path],
+    comments_subreddits: dict[str, Path],
+) -> None:
+    posts_only = set(posts_subreddits) - set(comments_subreddits)
+    comments_only = set(comments_subreddits) - set(posts_subreddits)
+
+    if not posts_only and not comments_only:
+        return
+
+    messages: list[str] = []
+    for name in sorted(posts_only):
+        messages.append(f"Posts file without matching comments: {posts_subreddits[name].name}")
+    for name in sorted(comments_only):
+        messages.append(f"Comments file without matching posts: {comments_subreddits[name].name}")
+    raise ValueError("Mismatched subreddit files:\n" + "\n".join(messages))
+
+
+def validate_arctic_shift_directory(
+    arctic_shift_dir: Path | None = None,
+) -> None:
+    directory = arctic_shift_dir if arctic_shift_dir is not None else arctic_shift_path()
+    posts_subreddits: dict[str, Path] = {}
+    for p in directory.glob("r_*_posts.jsonl"):
+        name = p.name.removeprefix("r_").removesuffix("_posts.jsonl")
+        posts_subreddits[name] = p
+
+    comments_subreddits: dict[str, Path] = {}
+    for p in directory.glob("r_*_comments.jsonl"):
+        name = p.name.removeprefix("r_").removesuffix("_comments.jsonl")
+        comments_subreddits[name] = p
+
+    _validate_subreddit_file_pairs_internal(posts_subreddits, comments_subreddits)
+
+
+def iter_subreddit_file_pairs(
+    arctic_shift_dir: Path | None = None,
+) -> Iterator[SubredditFilePair]:
+    directory = arctic_shift_dir if arctic_shift_dir is not None else arctic_shift_path()
+
+    posts_subreddits: dict[str, Path] = {}
+    for p in directory.glob("r_*_posts.jsonl"):
+        name = p.name.removeprefix("r_").removesuffix("_posts.jsonl")
+        posts_subreddits[name] = p
+
+    comments_subreddits: dict[str, Path] = {}
+    for p in directory.glob("r_*_comments.jsonl"):
+        name = p.name.removeprefix("r_").removesuffix("_comments.jsonl")
+        comments_subreddits[name] = p
+
+    _validate_subreddit_file_pairs_internal(posts_subreddits, comments_subreddits)
+
+    for name in sorted(posts_subreddits):
+        yield SubredditFilePair(name, posts_subreddits[name], comments_subreddits[name])
+
+
+def posts_file_from_subreddit_name(subreddit: str) -> Path:
+    filename = "r_" + subreddit + "_posts.jsonl"
+    return arctic_shift_path() / filename
+
+
+def comments_file_from_subreddit_name(subreddit: str) -> Path:
+    filename = "r_" + subreddit + "_comments.jsonl"
+    return arctic_shift_path() / filename
 
 
 def _create_nodes_from_arctic_shift_data(
