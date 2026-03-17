@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from rich.console import Console
 
 from rpg_subreddit_processor.arctic_shift import iter_subreddit_file_pairs, validate_arctic_shift_directory
+from rpg_subreddit_processor.commands.prune_non_questions import PruneNonQuestions
 from rpg_subreddit_processor.protocols import CompositeLogger, LoggingProtocol
 from rpg_subreddit_processor.utils.logging_config import configure_logging
 
@@ -89,6 +90,21 @@ def dump_subreddit_text(
     else:
         subreddits.extend([pair.subreddit for pair in iter_subreddit_file_pairs()])
     command.subreddits = subreddits
+    command.execute(create_logger())
+
+
+@app.command("prune-non-questions")
+def prune_non_questions(
+    subreddit: str | None = typer.Option(
+        None,
+        "--subreddit",
+        "-s",
+        help="Optional subreddit to process. If omitted, all discovered subreddits are processed.",
+    ),
+) -> None:
+    command = PruneNonQuestions()
+    if subreddit:
+        command.subreddits.append(subreddit)
     command.execute(create_logger())
 
 

@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 from rpg_subreddit_processor.entities import ROOT_NODE_PARENT_ID, RedditNode
 from rpg_subreddit_processor.utils import KeyValueStoreTransaction
-from rpg_subreddit_processor.utils.common_paths import arctic_shift_path
+from rpg_subreddit_processor.utils.common_paths import ProcessingStage, processing_stage_directory
 
 from .arctic_shift_comment import ArcticShiftComment
 from .arctic_shift_post import ArcticShiftPost
@@ -160,6 +160,10 @@ def node_from_comment(
     ups: int = comment.ups or 0
     downs: int = comment.downs or 0
     return RedditNode(item_id, author_id, body_id, parent_id, created_at, ups, downs)
+
+
+def arctic_shift_path() -> Path:
+    return processing_stage_directory(ProcessingStage.ArcticShift)
 
 
 def _validate_subreddit_file_pairs_internal(

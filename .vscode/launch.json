@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "-prune_non-q",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "rpg_subreddit_processor",
+            "console": "integratedTerminal",
+            "args": [
+                "prune-non-questions",
+                "--subreddit",
+                "dccrpg"
+            ]
+        },
+        {
             "name": "-dump",
             "type": "debugpy",
             "request": "launch",
