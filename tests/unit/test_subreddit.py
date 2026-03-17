@@ -153,3 +153,44 @@ class TestSubredditRootMutations:
         assert new_post.parent is not None
         assert new_post.parent.item_id == ROOT_NODE_PARENT_ID
         assert sample_subreddit[1] is new_post
+
+
+def _collect_bfs_fields(subreddit: Subreddit) -> list[tuple[int, int, int, int, int, int, int]]:
+    """Return (item_id, author_id, text_id, parent_id, epoch_sec, ups, downs) for each node in BFS order."""
+    return [
+        (
+            n.item_id,
+            n.author_id,
+            n.text_id,
+            n.parent_id,
+            int(n.created_utc.timestamp()),
+            n.ups,
+            n.downs,
+        )
+        for n in subreddit.breadth_first_traversal()
+    ]
+
+
+def test_msgpack_roundtrip(sample_subreddit: Subreddit) -> None:
+    original_fields = _collect_bfs_fields(sample_subreddit)
+
+    data = sample_subreddit.to_msgpack_bytes()
+    restored = Subreddit.from_msgpack_bytes(data)
+
+    assert restored.name == sample_subreddit.name
+    assert restored.post_count() == sample_subreddit.post_count()
+    assert restored.comment_count() == sample_subreddit.comment_count()
+    assert _collect_bfs_fields(restored) == original_fields
+
+
+def test_msgpack_file_roundtrip(tmp_path: pytest.TempdirFactory, sample_subreddit: Subreddit) -> None:
+    original_fields = _collect_bfs_fields(sample_subreddit)
+    filepath = tmp_path / "test.msgpack"  # type: ignore[operator]
+
+    sample_subreddit.to_msgpack_file(filepath)
+    restored = Subreddit.from_msgpack_file(filepath)
+
+    assert restored.name == sample_subreddit.name
+    assert restored.post_count() == sample_subreddit.post_count()
+    assert restored.comment_count() == sample_subreddit.comment_count()
+    assert _collect_bfs_fields(restored) == original_fields

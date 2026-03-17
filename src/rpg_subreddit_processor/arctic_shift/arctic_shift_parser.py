@@ -45,7 +45,7 @@ def _parse_arctic_shift_posts(file_path: str | Path) -> Iterator[ArcticShiftPost
                 ) from e
             except Exception as e:
                 # Re-raise with line number context for better debugging
-                raise type(e)(f"Error parsing line {line_num}: {e}") from e
+                raise ValueError(f"Error parsing line {line_num}: {e}") from e
 
 
 def _parse_arctic_shift_comments(file_path: str | Path) -> Iterator[ArcticShiftComment]:
@@ -74,8 +74,8 @@ def _parse_arctic_shift_comments(file_path: str | Path) -> Iterator[ArcticShiftC
                     e.pos,
                 ) from e
             except Exception as e:
-                # Re-raise with line number context for better debugging
-                raise type(e)(f"Error parsing line {line_num}: {e}") from e
+                # Preserve the original exception as context while adding line information.
+                raise ValueError(f"Error parsing line {line_num}: {e}") from e
 
 
 def clean_post_text(title: str, body: str) -> str:

@@ -15,6 +15,7 @@ from rpg_subreddit_processor.protocols import CompositeLogger, LoggingProtocol
 from rpg_subreddit_processor.utils.logging_config import configure_logging
 
 from ..commands.convert_arctic_shift_data import ConvertArcticShiftData
+from ..commands.dump_subreddit_text import DumpSubredditText
 from .file_logging_protocol import FileLogger
 from .rich_logging_protocol import RichConsoleLogger
 
@@ -67,6 +68,26 @@ def convert_arctic_shift_data(
     else:
         subreddits.extend([pair.subreddit for pair in iter_subreddit_file_pairs()])
 
+    command.subreddits = subreddits
+    command.execute(create_logger())
+
+
+@app.command("dump-subreddit-text")
+def dump_subreddit_text(
+    subreddit: str | None = typer.Option(
+        None,
+        "--subreddit",
+        "-s",
+        help="Optional subreddit to process. If omitted, all discovered subreddits are processed.",
+    ),
+) -> None:
+    """Load a subreddit's msgpack file and print all node text to stdout."""
+    command = DumpSubredditText()
+    subreddits: list[str] = []
+    if subreddit:
+        subreddits.append(subreddit)
+    else:
+        subreddits.extend([pair.subreddit for pair in iter_subreddit_file_pairs()])
     command.subreddits = subreddits
     command.execute(create_logger())
 

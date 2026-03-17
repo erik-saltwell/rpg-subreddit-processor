@@ -27,18 +27,15 @@ class ConvertArcticShiftData(CommmandProtocol):
 
     def convert_subreddit(self, subreddit_name: str) -> None:
         self.post_message(f"Converting {subreddit_name}...")
-        with self.logger.status("Loading...") as status:
-            posts_filepath: Path = posts_file_from_subreddit_name(subreddit_name)
-            comments_filepath: Path = comments_file_from_subreddit_name(subreddit_name)
-            with store.KeyValueStoreManager(common_paths.key_store_path(subreddit_name)) as store_mgr:
-                key_store: store.KeyValueStore = store_mgr.store(subreddit_name)
-                with key_store.txn() as txn:
-                    nodes: Iterator[RedditNode] = _create_nodes_from_arctic_shift_data(
-                        posts_filepath, comments_filepath, txn
-                    )
-                    status.update("Building tree...")
-                    subreddit: Subreddit = Subreddit.from_node_list(nodes, subreddit_name)
-                    status.update("Saving...")
-                    subreddit.to_json_file(
-                        common_paths.initial_subreddit_path(subreddit_name) / Path(subreddit_name + "_posts.json")
-                    )
+        posts_filepath: Path = posts_file_from_subreddit_name(subreddit_name)
+        comments_filepath: Path = comments_file_from_subreddit_name(subreddit_name)
+        with store.KeyValueStoreManager(common_paths.key_store_path(subreddit_name)) as store_mgr:
+            key_store: store.KeyValueStore = store_mgr.store(subreddit_name)
+            with key_store.txn() as txn:
+                nodes: Iterator[RedditNode] = _create_nodes_from_arctic_shift_data(
+                    posts_filepath, comments_filepath, txn
+                )
+                subreddit: Subreddit = Subreddit.from_node_list(nodes, subreddit_name, self.logger)
+                subreddit.to_msgpack_file(
+                    common_paths.posts_file(subreddit_name, common_paths._initial_subreddit_trees_path()), self.logger
+                )

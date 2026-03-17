@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "-dump",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "rpg_subreddit_processor",
+            "console": "integratedTerminal",
+            "args": [
+                "dump-subreddit-text",
+                "--subreddit",
+                "dccrpg"
+            ]
+        },
+        {
             "name": "-convert",
             "type": "debugpy",
             "request": "launch",
@@ -12,8 +24,6 @@
             "console": "integratedTerminal",
             "args": [
                 "convert-arctic-shift-data",
-                "--subreddit",
-                "alienrpg"
             ]
         },
         {

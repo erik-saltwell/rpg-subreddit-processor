@@ -59,6 +59,26 @@
         "test: unit"
       ],
       "problemMatcher": []
+    },
+    {
+      "label": "Open pyinstrument profile",
+      "type": "shell",
+      "command": "code",
+      "args": [
+        "-r",
+        "${workspaceFolder}/profile.pyinstrument.json"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Open cProfile profile",
+      "type": "shell",
+      "command": "code",
+      "args": [
+        "-r",
+        "${workspaceFolder}/profile.prof"
+      ],
+      "problemMatcher": []
     }
   ]
 }

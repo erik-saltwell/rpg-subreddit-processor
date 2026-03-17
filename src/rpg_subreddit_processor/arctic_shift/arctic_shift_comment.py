@@ -265,6 +265,7 @@ class ArcticShiftComment(BaseModel):
         description="Steward reports",
     )
     stickied: bool = Field(
+        default=False,
         description="True if comment is stickied",
     )
     user_reports: list[Any] | None = Field(

@@ -7,6 +7,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, SupportsIndex, cast, overload
 
+import msgpack
+
+from rpg_subreddit_processor.protocols import LoggingProtocol
+from rpg_subreddit_processor.protocols.logging_protocol import NullLogger, ProgressTask
+
 from .reddit_node import ROOT_NODE_PARENT_ID, RedditNode
 
 
@@ -30,9 +35,11 @@ class Subreddit(MutableSequence["RedditNode"]):
     def insert(self, index: int, value: RedditNode) -> None:
         self._root.insert(index, value)
 
-    def to_json_string(self) -> str:
+    def to_json_string(self, task: ProgressTask | None = None) -> str:
         def node_to_dict(node: RedditNode) -> dict[str, Any]:
             """Recursively convert a RedditNode and its children to a dict."""
+            if task is not None:
+                task.advance()
             return {
                 "item_id": node.item_id,
                 "author_id": node.author_id,
@@ -50,26 +57,38 @@ class Subreddit(MutableSequence["RedditNode"]):
         }
         return json.dumps(data, indent=2)
 
-    def to_json_file(self, filepath: Path) -> None:
-        json_string = self.to_json_string()
+    def to_json_file(self, filepath: Path, logger: LoggingProtocol = NullLogger()) -> None:  # noqa: B008
+        total = self._root.count_all_descendants() + 1
+        with logger.progress("Saving", total=total) as task:
+            json_string = self.to_json_string(task)
         filepath.write_text(json_string)
 
     @classmethod
-    def from_node_list(cls, nodes: Iterator[RedditNode], subreddit_name: str) -> Subreddit:
+    def from_node_list(
+        cls,
+        nodes: Iterator[RedditNode],
+        subreddit_name: str,
+        logger: LoggingProtocol = NullLogger(),  # noqa: B008
+    ) -> Subreddit:
         # We know that we will get orphans because of the great reddit data blackout.
         # This drops the orphans intenionally.
 
         all_nodes: dict[int, RedditNode] = {}
-        for node in nodes:
-            all_nodes[node.item_id] = node
+        with logger.progress("Loading nodes") as task:
+            for node in nodes:
+                all_nodes[node.item_id] = node
+                task.advance()
+
         subreddit: Subreddit = Subreddit(subreddit_name)
-        for node in all_nodes.values():
-            if node.is_root():
-                subreddit._root.append(node)
-            else:
-                parent: RedditNode | None = all_nodes.get(node.parent_id)
-                if parent is not None:
-                    parent.append(node)
+        with logger.progress("Building tree", total=len(all_nodes)) as task:
+            for node in all_nodes.values():
+                if node.is_root():
+                    subreddit._root.append(node)
+                else:
+                    parent: RedditNode | None = all_nodes.get(node.parent_id)
+                    if parent is not None:
+                        parent.append(node)
+                task.advance()
         return subreddit
 
     @classmethod
@@ -100,6 +119,52 @@ class Subreddit(MutableSequence["RedditNode"]):
     def from_json_file(cls, filepath: Path) -> Subreddit:
         json_string = filepath.read_text()
         return cls.from_json_string(json_string)
+
+    def to_msgpack_bytes(self, task: ProgressTask | None = None) -> bytes:
+        records = []
+        for node in self.breadth_first_traversal():
+            if task is not None:
+                task.advance()
+            records.append(
+                [
+                    node.item_id,
+                    node.author_id,
+                    node.text_id,
+                    node.parent_id,
+                    int(node.created_utc.timestamp()),
+                    node.ups,
+                    node.downs,
+                ]
+            )
+        return bytes(msgpack.packb([self.name, records], use_bin_type=True))
+
+    def to_msgpack_file(self, filepath: Path, logger: LoggingProtocol = NullLogger()) -> None:  # noqa: B008
+        total = self._root.count_all_descendants()
+        with logger.progress("Saving (binary)", total=total) as task:
+            data = self.to_msgpack_bytes(task)
+        filepath.write_bytes(data)
+
+    @classmethod
+    def from_msgpack_bytes(cls, data: bytes, logger: LoggingProtocol = NullLogger()) -> Subreddit:  # noqa: B008
+        name, records = msgpack.unpackb(data, raw=False)
+
+        def iter_nodes() -> Iterator[RedditNode]:
+            for r in records:
+                yield RedditNode(
+                    item_id=r[0],
+                    author_id=r[1],
+                    text_id=r[2],
+                    parent_id=r[3],
+                    created_utc=datetime.fromtimestamp(r[4], tz=UTC),
+                    ups=r[5],
+                    downs=r[6],
+                )
+
+        return cls.from_node_list(iter_nodes(), name, logger)
+
+    @classmethod
+    def from_msgpack_file(cls, filepath: Path, logger: LoggingProtocol = NullLogger()) -> Subreddit:  # noqa: B008
+        return cls.from_msgpack_bytes(filepath.read_bytes(), logger)
 
     def breadth_first_traversal(self) -> Generator[RedditNode, None, None]:
         """BFS over the subtree under _root, but skip yielding the root node itself."""

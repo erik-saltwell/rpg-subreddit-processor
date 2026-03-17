@@ -28,7 +28,7 @@ class KeyValueStoreManager:
         self,
         path_to_store: str | Path,
         max_dbs: int = 10,
-        map_size: int = 1024 * 1024 * 1024,
+        map_size: int = 1024 * 1024 * 1024 * 25,  # 25 Gb
     ):
         self._env: lmdb.Environment | None = None
         self._stores: dict[str, KeyValueStore] = {}

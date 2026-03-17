@@ -7,6 +7,7 @@ authors = [{ name = "Erik Saltwell", email = "erik.saltwell@gmail.com" }]
 requires-python = ">=3.11"
 dependencies = [
     "datasets>=4.5.0",
+    "msgpack>=1.1",
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "rich>=14.2.0",
@@ -25,6 +26,7 @@ build-backend = "uv_build"
 dev = [
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
+    "pyinstrument>=5.1.2",
     "pyright>=1.1.408",
     "pytest>=9.0.2",
     "ruff>=0.14.13",
