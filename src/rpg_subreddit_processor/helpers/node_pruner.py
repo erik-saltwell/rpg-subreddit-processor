@@ -44,4 +44,4 @@ def prune_root_nodes(
             progress.advance()
     subreddit.prune_nodes(nodes_to_prune)
     kept = subreddit.count_posts()
-    logger.report_message(f"  Pruned {len(nodes_to_prune)} nodes, kept {kept} nodes.")
+    logger.report_message(f"  Initial Count: {total}. Pruned {len(nodes_to_prune)} nodes, kept {kept} nodes.")

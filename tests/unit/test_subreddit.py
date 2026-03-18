@@ -171,6 +171,80 @@ def _collect_bfs_fields(subreddit: Subreddit) -> list[tuple[int, int, int, int, 
     ]
 
 
+class TestPruneNodes:
+    """Tests for Subreddit.prune_nodes."""
+
+    # Tree structure (from sample_subreddit fixture):
+    # _root (synthetic)
+    # ├── 0 (post / root node)
+    # │   ├── 3
+    # │   │   └── 5
+    # │   └── 4
+    # ├── 1 (post / root node)
+    # │   └── 6
+    # │       └── 7
+    # └── 2 (post / root node)
+    #     ├── 8
+    #     └── 9
+
+    def _bfs_ids(self, subreddit: Subreddit) -> set[int]:
+        return {node.item_id for node in subreddit.breadth_first_traversal()}
+
+    def test_prune_non_root_nodes(self, sample_subreddit: Subreddit) -> None:
+        """Pruning non-root (comment) nodes removes them from the tree."""
+        nodes = {n.item_id: n for n in sample_subreddit.breadth_first_traversal()}
+        to_prune = [nodes[3], nodes[6]]  # comments under post 0 and post 1
+
+        sample_subreddit.prune_nodes(to_prune)
+
+        remaining = self._bfs_ids(sample_subreddit)
+        assert 3 not in remaining
+        assert 6 not in remaining
+        # node 5 was a child of 3; its parent chain is broken but 5 itself
+        # is not explicitly pruned — it stays attached to the detached subtree
+        assert nodes[3].parent is None
+        assert nodes[6].parent is None
+
+    def test_prune_root_nodes(self, sample_subreddit: Subreddit) -> None:
+        """Pruning root (post) nodes removes them and their subtrees from the tree."""
+        nodes = {n.item_id: n for n in sample_subreddit.breadth_first_traversal()}
+        to_prune = [nodes[0], nodes[2]]  # posts 0 and 2
+
+        sample_subreddit.prune_nodes(to_prune)
+
+        remaining = self._bfs_ids(sample_subreddit)
+        assert 0 not in remaining
+        assert 2 not in remaining
+        assert nodes[0].parent is None
+        assert nodes[2].parent is None
+        # only post 1 and its subtree remain
+        assert remaining == {1, 6, 7}
+        assert sample_subreddit.count_posts() == 1
+
+    def test_prune_mixed_root_and_non_root_nodes(self, sample_subreddit: Subreddit) -> None:
+        """Pruning a mix of root (post) and non-root (comment) nodes removes all of them."""
+        nodes = {n.item_id: n for n in sample_subreddit.breadth_first_traversal()}
+        # post 1 (root node) + comment 4 (non-root, child of post 0)
+        to_prune = [nodes[1], nodes[4]]
+
+        sample_subreddit.prune_nodes(to_prune)
+
+        remaining = self._bfs_ids(sample_subreddit)
+        assert 1 not in remaining
+        assert 4 not in remaining
+        assert nodes[1].parent is None
+        assert nodes[4].parent is None
+        # posts 0 and 2 remain with their surviving subtrees
+        assert 0 in remaining
+        assert 3 in remaining
+        assert 5 in remaining
+        assert 2 in remaining
+        assert 8 in remaining
+        assert 9 in remaining
+        assert sample_subreddit.count_posts() == 2
+        assert sample_subreddit.count_all_nodes() == 6
+
+
 def test_msgpack_roundtrip(sample_subreddit: Subreddit) -> None:
     original_fields = _collect_bfs_fields(sample_subreddit)
 

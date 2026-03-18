@@ -96,11 +96,11 @@ def dump_subreddit_text(
 
 @app.command("prune-non-questions")
 def prune_non_questions(
-    subreddit: str | None = typer.Option(
+    subreddit: list[str] | None = typer.Option(  # noqa: B008
         None,
         "--subreddit",
         "-s",
-        help="Optional subreddit to process. If omitted, all discovered subreddits are processed.",
+        help="Optional subreddit(s) to process. Repeat to pass multiple. If omitted, all subreddits are processed.",
     ),
 ) -> None:
     command = PruneNonQuestions(
@@ -108,7 +108,7 @@ def prune_non_questions(
         output_directory=processing_stage_directory(ProcessingStage.NonQuestionsPruned),
     )
     if subreddit:
-        command.subreddits.append(subreddit)
+        command.subreddits.extend(subreddit)
     command.execute(create_logger())
 
 

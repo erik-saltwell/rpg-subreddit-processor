@@ -203,6 +203,10 @@ class Subreddit(MutableSequence["RedditNode"]):
             if not node.is_root():
                 assert node.parent is not None
                 node.parent.remove(node)
+                node.parent = None
+            else:
+                self._root.remove(node)
+                node.parent = None
 
     @overload
     def __getitem__(self, index: SupportsIndex) -> RedditNode: ...
