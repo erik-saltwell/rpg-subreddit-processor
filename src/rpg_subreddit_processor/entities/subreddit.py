@@ -187,13 +187,16 @@ class Subreddit(MutableSequence["RedditNode"]):
             assert node.parent is not None
             print(f"{node.parent.item_id}->{node.item_id}")
 
-    def post_count(self) -> int:
+    def count_posts(self) -> int:
         """Return the number of posts (direct children of the root)."""
         return len(self._root)
 
-    def comment_count(self) -> int:
+    def count_comments(self) -> int:
         """Return the number of comments (all descendants minus posts)."""
-        return self._root.count_all_descendants() - self.post_count()
+        return self._root.count_all_descendants() - self.count_posts()
+
+    def count_all_nodes(self) -> int:
+        return self._root.count_all_descendants()
 
     def prune_nodes(self, nodes_to_delete: Iterable[RedditNode]) -> None:
         for node in list(nodes_to_delete):

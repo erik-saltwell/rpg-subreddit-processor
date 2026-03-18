@@ -28,3 +28,5 @@ def configure_logging() -> None:
         datefmt="[%X]",
         handlers=[RichHandler(rich_tracebacks=True)],
     )
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)

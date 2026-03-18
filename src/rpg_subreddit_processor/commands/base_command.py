@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import rpg_subreddit_processor.utils.common_paths as common_paths
@@ -10,11 +11,11 @@ from rpg_subreddit_processor.protocols import CommmandProtocol, LoggingProtocol
 from rpg_subreddit_processor.protocols.logging_protocol import NullLogger
 
 
+@dataclass
 class BaseCommand(ABC, CommmandProtocol):
-    subreddits: list[str] = []
-
     input_directory: Path
     output_directory: Path
+    subreddits: list[str] = field(default_factory=list)
     logger: LoggingProtocol = NullLogger()  # noqa: B008
 
     def post_message(self, message: str) -> None:

@@ -45,6 +45,7 @@ def key_store_path(subreddit: str) -> Path:
 
 
 def posts_file(subreddit: str, base_directory: Path) -> Path:
+    ensure_directory(base_directory / Path(subreddit))
     return base_directory / Path(subreddit) / _POSTS_FILENAME
 
 

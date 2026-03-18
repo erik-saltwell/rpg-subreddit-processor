@@ -93,8 +93,8 @@ def test_sample_subreddit_structure(sample_subreddit: Subreddit) -> None:
 
 def test_subreddit_length(sample_subreddit: Subreddit) -> None:
     assert len(sample_subreddit) == 3
-    assert sample_subreddit.post_count() == 3
-    assert sample_subreddit.comment_count() == 7
+    assert sample_subreddit.count_posts() == 3
+    assert sample_subreddit.count_comments() == 7
 
 
 class TestSubredditRootMutations:
@@ -178,8 +178,8 @@ def test_msgpack_roundtrip(sample_subreddit: Subreddit) -> None:
     restored = Subreddit.from_msgpack_bytes(data)
 
     assert restored.name == sample_subreddit.name
-    assert restored.post_count() == sample_subreddit.post_count()
-    assert restored.comment_count() == sample_subreddit.comment_count()
+    assert restored.count_posts() == sample_subreddit.count_posts()
+    assert restored.count_comments() == sample_subreddit.count_comments()
     assert _collect_bfs_fields(restored) == original_fields
 
 
@@ -191,6 +191,6 @@ def test_msgpack_file_roundtrip(tmp_path: pytest.TempdirFactory, sample_subreddi
     restored = Subreddit.from_msgpack_file(filepath)
 
     assert restored.name == sample_subreddit.name
-    assert restored.post_count() == sample_subreddit.post_count()
-    assert restored.comment_count() == sample_subreddit.comment_count()
+    assert restored.count_posts() == sample_subreddit.count_posts()
+    assert restored.count_comments() == sample_subreddit.count_comments()
     assert _collect_bfs_fields(restored) == original_fields
