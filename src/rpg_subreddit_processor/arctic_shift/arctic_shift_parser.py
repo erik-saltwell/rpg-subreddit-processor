@@ -190,8 +190,8 @@ def validate_arctic_shift_directory(
         if not sub_dir.is_dir():
             continue
         sub = sub_dir.name
-        posts_path = arctic_shift_posts_file(sub)
-        comments_path = arctic_shift_comments_file(sub)
+        posts_path = sub_dir / f"r_{sub}_posts.jsonl"
+        comments_path = sub_dir / f"r_{sub}_comments.jsonl"
         if posts_path.exists():
             posts_subreddits[sub] = posts_path
         if comments_path.exists():
@@ -209,8 +209,8 @@ def iter_subreddit_file_pairs(
         if not sub_dir.is_dir():
             continue
         sub = sub_dir.name
-        posts_path = arctic_shift_posts_file(sub)
-        comments_path = arctic_shift_comments_file(sub)
+        posts_path = sub_dir / f"r_{sub}_posts.jsonl"
+        comments_path = sub_dir / f"r_{sub}_comments.jsonl"
         if posts_path.exists():
             posts_subreddits[sub] = posts_path
         if comments_path.exists():
