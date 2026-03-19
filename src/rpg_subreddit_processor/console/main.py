@@ -76,21 +76,17 @@ def convert_arctic_shift_data(
 
 @app.command("dump-subreddit-text")
 def dump_subreddit_text(
-    subreddit: str | None = typer.Option(
+    subreddit: list[str] | None = typer.Option(  # noqa: B008
         None,
         "--subreddit",
         "-s",
-        help="Optional subreddit to process. If omitted, all discovered subreddits are processed.",
+        help="Optional subreddit(s) to process. Repeat to pass multiple. If omitted, all subreddits are processed.",
     ),
 ) -> None:
     """Load a subreddit's msgpack file and print all node text to stdout."""
-    command = DumpSubredditText()
-    subreddits: list[str] = []
+    command = DumpSubredditText(input_stage=ProcessingStage.Converted)
     if subreddit:
-        subreddits.append(subreddit)
-    else:
-        subreddits.extend([pair.subreddit for pair in iter_subreddit_file_pairs()])
-    command.subreddits = subreddits
+        command.subreddits.extend(subreddit)
     command.execute(create_logger())
 
 

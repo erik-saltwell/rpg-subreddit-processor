@@ -12,7 +12,7 @@ from rpg_subreddit_processor.utils.common_paths import ProcessingStage
 
 
 @dataclass
-class BaseCommand(ABC, CommmandProtocol):
+class BaseUpdateCommand(ABC, CommmandProtocol):
     input_stage: ProcessingStage
     output_stage: ProcessingStage
     subreddits: list[str] = field(default_factory=list)

@@ -12,7 +12,7 @@ from rpg_subreddit_processor.protocols.logging_protocol import NullLogger
 from rpg_subreddit_processor.utils import common_paths
 from rpg_subreddit_processor.utils.key_value_store import KeyValueStoreTransaction
 
-from .base_command import BaseCommand
+from .base_update_command import BaseUpdateCommand
 
 
 @dataclass
@@ -27,7 +27,7 @@ class NonQuestionPruneStrategy(NodePruningStrategy):
         return prune
 
 
-class PruneNonQuestions(BaseCommand):
+class PruneNonQuestions(BaseUpdateCommand):
     subreddits: list[str] = []
     logger: LoggingProtocol = NullLogger()  # noqa: B008
 
