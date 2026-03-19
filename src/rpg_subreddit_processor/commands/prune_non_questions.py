@@ -32,8 +32,8 @@ class PruneNonQuestions(BaseCommand):
     logger: LoggingProtocol = NullLogger()  # noqa: B008
 
     def update_subreddit(self, subreddit: Subreddit, subreddit_name: str, key_store: store.KeyValueStore) -> None:
-        kept_filepath: Path = common_paths.kept_file(subreddit_name, self.output_directory)
-        pruned_filepath: Path = common_paths.pruned_file(subreddit_name, self.output_directory)
+        kept_filepath: Path = common_paths.kept_file(subreddit_name, "non_questions")
+        pruned_filepath: Path = common_paths.pruned_file(subreddit_name, "non_questions")
         strategy: NonQuestionPruneStrategy = NonQuestionPruneStrategy(self.logger)
 
         with key_store.txn() as txn:

@@ -37,8 +37,6 @@ class ConvertArcticShiftData(CommmandProtocol):
                 )
                 subreddit: Subreddit = Subreddit.from_node_list(nodes, subreddit_name, self.logger)
                 subreddit.to_msgpack_file(
-                    common_paths.posts_file(
-                        subreddit_name, common_paths.processing_stage_directory(common_paths.ProcessingStage.Converted)
-                    ),
+                    common_paths.posts_file(subreddit_name, common_paths.ProcessingStage.Converted),
                     self.logger,
                 )

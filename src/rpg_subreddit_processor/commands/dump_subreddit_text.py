@@ -17,9 +17,7 @@ class DumpSubredditText(CommmandProtocol):
             self.process_subreddit(subreddit)
 
     def process_subreddit(self, subreddit_name: str) -> None:
-        msgpack_path = common_paths.posts_file(
-            subreddit_name, common_paths.processing_stage_directory(common_paths.ProcessingStage.Converted)
-        )
+        msgpack_path = common_paths.posts_file(subreddit_name, common_paths.ProcessingStage.Converted)
         subreddit = Subreddit.from_msgpack_file(msgpack_path, self.logger)
         with store.KeyValueStoreManager(common_paths.key_store_path(subreddit_name)) as store_mgr:
             key_store = store_mgr.store(subreddit_name)

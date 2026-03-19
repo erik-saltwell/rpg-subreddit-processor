@@ -6,14 +6,9 @@ from pathlib import Path
 
 _DATA_DIR: Path = Path("data")
 _FRAGMENTS_DIR: Path = Path("fragments")
-_KEYSTORES_DIR: Path = Path("key_stores")
-_POSTS_FILENAME: Path = Path("posts.msgpack")
-_KEPT_FILENAME: Path = Path("kept.txt")
-_PRUNED_FILENAME: Path = Path("pruned.txt")
 
 
 class ProcessingStage(StrEnum):
-    ArcticShift = "arctic_shift"
     Converted = "initial_subreddit_trees"
     NonQuestionsPruned = "non_questions_pruned"
 
@@ -32,42 +27,39 @@ def fragments_path() -> Path:
     return _FRAGMENTS_DIR
 
 
-def _key_stores_path() -> Path:
-    return data_path() / _KEYSTORES_DIR
+def subreddit_directory(subreddit: str) -> Path:
+    d = data_path() / subreddit
+    ensure_directory(d)
+    return d
 
 
-def processing_stage_directory(stage: ProcessingStage) -> Path:
-    return data_path() / stage
+def arctic_shift_posts_file(subreddit: str) -> Path:
+    return subreddit_directory(subreddit) / f"r_{subreddit}_posts.jsonl"
+
+
+def arctic_shift_comments_file(subreddit: str) -> Path:
+    return subreddit_directory(subreddit) / f"r_{subreddit}_comments.jsonl"
 
 
 def key_store_path(subreddit: str) -> Path:
-    return_value: Path = _key_stores_path() / subreddit / Path("lmdb")
+    return_value: Path = subreddit_directory(subreddit) / "lmdb"
     ensure_directory(return_value)
     return return_value
 
 
-def posts_file(subreddit: str, base_directory: Path) -> Path:
-    ensure_directory(base_directory / Path(subreddit))
-    return base_directory / Path(subreddit) / _POSTS_FILENAME
+def posts_file(subreddit: str, stage: ProcessingStage) -> Path:
+    return subreddit_directory(subreddit) / f"{stage}.msgpack"
 
 
-def kept_file(subreddit: str, base_directory: Path) -> Path:
-    ensure_directory(base_directory / Path(subreddit))
-    return base_directory / Path(subreddit) / _KEPT_FILENAME
+def kept_file(subreddit: str, prefix: str) -> Path:
+    return subreddit_directory(subreddit) / f"{prefix}_kept.txt"
 
 
-def pruned_file(subreddit: str, base_directory: Path) -> Path:
-    ensure_directory(base_directory / Path(subreddit))
-    return base_directory / Path(subreddit) / _PRUNED_FILENAME
+def pruned_file(subreddit: str, prefix: str) -> Path:
+    return subreddit_directory(subreddit) / f"{prefix}_pruned.txt"
 
 
-def iterate_subreddit_names(base_directory: Path) -> Iterator[str]:
-    for child in base_directory.iterdir():
+def iterate_subreddit_names() -> Iterator[str]:
+    for child in data_path().iterdir():
         if child.is_dir():
             yield child.name
-
-
-def iterate_subreddits(base_directory: Path) -> Iterator[Path]:
-    for child in base_directory.iterdir():
-        if child.is_dir():
-            yield child / Path("posts") / _POSTS_FILENAME

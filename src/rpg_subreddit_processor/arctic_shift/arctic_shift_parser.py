@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 from rpg_subreddit_processor.entities import ROOT_NODE_PARENT_ID, RedditNode
 from rpg_subreddit_processor.utils import KeyValueStoreTransaction
-from rpg_subreddit_processor.utils.common_paths import ProcessingStage, processing_stage_directory
+from rpg_subreddit_processor.utils.common_paths import arctic_shift_comments_file, arctic_shift_posts_file, data_path
 
 from .arctic_shift_comment import ArcticShiftComment
 from .arctic_shift_post import ArcticShiftPost
@@ -162,10 +162,6 @@ def node_from_comment(
     return RedditNode(item_id, author_id, body_id, parent_id, created_at, ups, downs)
 
 
-def arctic_shift_path() -> Path:
-    return processing_stage_directory(ProcessingStage.ArcticShift)
-
-
 def _validate_subreddit_file_pairs_internal(
     posts_subreddits: dict[str, Path],
     comments_subreddits: dict[str, Path],
@@ -185,36 +181,40 @@ def _validate_subreddit_file_pairs_internal(
 
 
 def validate_arctic_shift_directory(
-    arctic_shift_dir: Path | None = None,
+    base_dir: Path | None = None,
 ) -> None:
-    directory = arctic_shift_dir if arctic_shift_dir is not None else arctic_shift_path()
+    directory = base_dir if base_dir is not None else data_path()
     posts_subreddits: dict[str, Path] = {}
-    for p in directory.glob("r_*_posts.jsonl"):
-        name = p.name.removeprefix("r_").removesuffix("_posts.jsonl")
-        posts_subreddits[name] = p
-
     comments_subreddits: dict[str, Path] = {}
-    for p in directory.glob("r_*_comments.jsonl"):
-        name = p.name.removeprefix("r_").removesuffix("_comments.jsonl")
-        comments_subreddits[name] = p
-
+    for sub_dir in directory.iterdir():
+        if not sub_dir.is_dir():
+            continue
+        sub = sub_dir.name
+        posts_path = arctic_shift_posts_file(sub)
+        comments_path = arctic_shift_comments_file(sub)
+        if posts_path.exists():
+            posts_subreddits[sub] = posts_path
+        if comments_path.exists():
+            comments_subreddits[sub] = comments_path
     _validate_subreddit_file_pairs_internal(posts_subreddits, comments_subreddits)
 
 
 def iter_subreddit_file_pairs(
-    arctic_shift_dir: Path | None = None,
+    base_dir: Path | None = None,
 ) -> Iterator[SubredditFilePair]:
-    directory = arctic_shift_dir if arctic_shift_dir is not None else arctic_shift_path()
-
+    directory = base_dir if base_dir is not None else data_path()
     posts_subreddits: dict[str, Path] = {}
-    for p in directory.glob("r_*_posts.jsonl"):
-        name = p.name.removeprefix("r_").removesuffix("_posts.jsonl")
-        posts_subreddits[name] = p
-
     comments_subreddits: dict[str, Path] = {}
-    for p in directory.glob("r_*_comments.jsonl"):
-        name = p.name.removeprefix("r_").removesuffix("_comments.jsonl")
-        comments_subreddits[name] = p
+    for sub_dir in directory.iterdir():
+        if not sub_dir.is_dir():
+            continue
+        sub = sub_dir.name
+        posts_path = arctic_shift_posts_file(sub)
+        comments_path = arctic_shift_comments_file(sub)
+        if posts_path.exists():
+            posts_subreddits[sub] = posts_path
+        if comments_path.exists():
+            comments_subreddits[sub] = comments_path
 
     _validate_subreddit_file_pairs_internal(posts_subreddits, comments_subreddits)
 
@@ -223,13 +223,11 @@ def iter_subreddit_file_pairs(
 
 
 def posts_file_from_subreddit_name(subreddit: str) -> Path:
-    filename = "r_" + subreddit + "_posts.jsonl"
-    return arctic_shift_path() / filename
+    return arctic_shift_posts_file(subreddit)
 
 
 def comments_file_from_subreddit_name(subreddit: str) -> Path:
-    filename = "r_" + subreddit + "_comments.jsonl"
-    return arctic_shift_path() / filename
+    return arctic_shift_comments_file(subreddit)
 
 
 def _create_nodes_from_arctic_shift_data(

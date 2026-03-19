@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass, field
-from pathlib import Path
 
 import rpg_subreddit_processor.utils.common_paths as common_paths
 import rpg_subreddit_processor.utils.key_value_store as store
 from rpg_subreddit_processor.entities import Subreddit
 from rpg_subreddit_processor.protocols import CommmandProtocol, LoggingProtocol
 from rpg_subreddit_processor.protocols.logging_protocol import NullLogger
+from rpg_subreddit_processor.utils.common_paths import ProcessingStage
 
 
 @dataclass
 class BaseCommand(ABC, CommmandProtocol):
-    input_directory: Path
-    output_directory: Path
+    input_stage: ProcessingStage
+    output_stage: ProcessingStage
     subreddits: list[str] = field(default_factory=list)
     logger: LoggingProtocol = NullLogger()  # noqa: B008
 
@@ -24,7 +24,7 @@ class BaseCommand(ABC, CommmandProtocol):
     def execute(self, logger: LoggingProtocol) -> None:
         self.logger = logger
         if len(self.subreddits) == 0:
-            self.subreddits.extend(common_paths.iterate_subreddit_names(self.input_directory))
+            self.subreddits.extend(common_paths.iterate_subreddit_names())
         for subreddit in self.subreddits:
             self.process_subreddit(subreddit)
 
@@ -39,10 +39,10 @@ class BaseCommand(ABC, CommmandProtocol):
     def update_subreddit(self, subreddit: Subreddit, subreddit_name: str, key_store: store.KeyValueStore) -> None: ...
 
     def load_subreddit(self, subreddit_name: str) -> Subreddit:
-        input_filepath: Path = common_paths.posts_file(subreddit_name, self.input_directory)
+        input_filepath = common_paths.posts_file(subreddit_name, self.input_stage)
         subreddit = Subreddit.from_msgpack_file(input_filepath, self.logger)
         return subreddit
 
     def save_subreddit(self, subreddit: Subreddit, subreddit_name: str) -> None:
-        output_filepath: Path = common_paths.posts_file(subreddit_name, self.output_directory)
+        output_filepath = common_paths.posts_file(subreddit_name, self.output_stage)
         subreddit.to_msgpack_file(output_filepath, self.logger)

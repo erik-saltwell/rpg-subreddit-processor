@@ -13,7 +13,7 @@ from rich.console import Console
 from rpg_subreddit_processor.arctic_shift import iter_subreddit_file_pairs, validate_arctic_shift_directory
 from rpg_subreddit_processor.commands.prune_non_questions import PruneNonQuestions
 from rpg_subreddit_processor.protocols import CompositeLogger, LoggingProtocol
-from rpg_subreddit_processor.utils.common_paths import ProcessingStage, processing_stage_directory
+from rpg_subreddit_processor.utils.common_paths import ProcessingStage
 from rpg_subreddit_processor.utils.logging_config import configure_logging
 
 from ..commands.convert_arctic_shift_data import ConvertArcticShiftData
@@ -104,8 +104,8 @@ def prune_non_questions(
     ),
 ) -> None:
     command = PruneNonQuestions(
-        input_directory=processing_stage_directory(ProcessingStage.Converted),
-        output_directory=processing_stage_directory(ProcessingStage.NonQuestionsPruned),
+        input_stage=ProcessingStage.Converted,
+        output_stage=ProcessingStage.NonQuestionsPruned,
     )
     if subreddit:
         command.subreddits.extend(subreddit)
