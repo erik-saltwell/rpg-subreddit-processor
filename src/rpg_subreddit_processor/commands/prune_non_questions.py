@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import rpg_subreddit_processor.utils.key_value_store as store
 from rpg_subreddit_processor.entities import RedditNode, Subreddit
@@ -8,6 +9,7 @@ from rpg_subreddit_processor.helpers.node_pruner import NodePruningStrategy, pru
 from rpg_subreddit_processor.helpers.ollama_helper import OllamaHelper, OllamaModel, labels_match
 from rpg_subreddit_processor.protocols import LoggingProtocol
 from rpg_subreddit_processor.protocols.logging_protocol import NullLogger
+from rpg_subreddit_processor.utils import common_paths
 from rpg_subreddit_processor.utils.key_value_store import KeyValueStoreTransaction
 
 from .base_command import BaseCommand
@@ -30,6 +32,9 @@ class PruneNonQuestions(BaseCommand):
     logger: LoggingProtocol = NullLogger()  # noqa: B008
 
     def update_subreddit(self, subreddit: Subreddit, subreddit_name: str, key_store: store.KeyValueStore) -> None:
+        kept_filepath: Path = common_paths.kept_file(subreddit_name, self.output_directory)
+        pruned_filepath: Path = common_paths.pruned_file(subreddit_name, self.output_directory)
         strategy: NonQuestionPruneStrategy = NonQuestionPruneStrategy(self.logger)
+
         with key_store.txn() as txn:
-            prune_root_nodes(subreddit, strategy, txn, self.logger)
+            prune_root_nodes(subreddit, strategy, txn, pruned_filepath, kept_filepath, self.logger)

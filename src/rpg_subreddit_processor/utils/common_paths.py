@@ -8,6 +8,8 @@ _DATA_DIR: Path = Path("data")
 _FRAGMENTS_DIR: Path = Path("fragments")
 _KEYSTORES_DIR: Path = Path("key_stores")
 _POSTS_FILENAME: Path = Path("posts.msgpack")
+_KEPT_FILENAME: Path = Path("kept.txt")
+_PRUNED_FILENAME: Path = Path("pruned.txt")
 
 
 class ProcessingStage(StrEnum):
@@ -47,6 +49,16 @@ def key_store_path(subreddit: str) -> Path:
 def posts_file(subreddit: str, base_directory: Path) -> Path:
     ensure_directory(base_directory / Path(subreddit))
     return base_directory / Path(subreddit) / _POSTS_FILENAME
+
+
+def kept_file(subreddit: str, base_directory: Path) -> Path:
+    ensure_directory(base_directory / Path(subreddit))
+    return base_directory / Path(subreddit) / _KEPT_FILENAME
+
+
+def pruned_file(subreddit: str, base_directory: Path) -> Path:
+    ensure_directory(base_directory / Path(subreddit))
+    return base_directory / Path(subreddit) / _PRUNED_FILENAME
 
 
 def iterate_subreddit_names(base_directory: Path) -> Iterator[str]:
