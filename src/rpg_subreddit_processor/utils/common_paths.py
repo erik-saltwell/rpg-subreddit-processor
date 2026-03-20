@@ -33,6 +33,10 @@ def subreddit_directory(subreddit: str) -> Path:
     return d
 
 
+def potential_thanks_file() -> Path:
+    return data_path() / "potential_thanks.json"
+
+
 def arctic_shift_posts_file(subreddit: str) -> Path:
     return subreddit_directory(subreddit) / f"r_{subreddit}_posts.jsonl"
 

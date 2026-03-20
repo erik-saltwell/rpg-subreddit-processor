@@ -26,6 +26,7 @@ class BaseReportingCommand(ABC, CommmandProtocol):
             self.subreddits.extend(common_paths.iterate_subreddit_names())
         for subreddit in self.subreddits:
             self.process_subreddit(subreddit)
+        self.complete()
 
     def process_subreddit(self, subreddit_name: str) -> None:
         self.post_message(f"Processing {subreddit_name}...")
@@ -34,6 +35,7 @@ class BaseReportingCommand(ABC, CommmandProtocol):
             key_store = store_mgr.store(subreddit_name)
             self.process(subreddit, subreddit_name, key_store)
 
+    def complete(self) -> None: ...
     def process(self, subreddit: Subreddit, subreddit_name: str, key_store: store.KeyValueStore) -> None: ...
 
     def load_subreddit(self, subreddit_name: str) -> Subreddit:

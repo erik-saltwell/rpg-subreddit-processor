@@ -12,6 +12,7 @@ from rich.console import Console
 
 from rpg_subreddit_processor.arctic_shift import iter_subreddit_file_pairs, validate_arctic_shift_directory
 from rpg_subreddit_processor.commands.prune_non_questions import PruneNonQuestions
+from rpg_subreddit_processor.commands.report_potential_acknowledgements import ReportPotentialAcknowledgements
 from rpg_subreddit_processor.protocols import CompositeLogger, LoggingProtocol
 from rpg_subreddit_processor.utils.common_paths import ProcessingStage
 from rpg_subreddit_processor.utils.logging_config import configure_logging
@@ -71,6 +72,24 @@ def convert_arctic_shift_data(
         subreddits.extend([pair.subreddit for pair in iter_subreddit_file_pairs()])
 
     command.subreddits = subreddits
+    command.execute(create_logger())
+
+
+@app.command("report_potential-thanks")
+def report_potential_thanks(
+    row_count: int = typer.Option(None, "--row-count", "-r", help="maximum number of rows to output"),
+    subreddit: list[str] | None = typer.Option(  # noqa: B008
+        None,
+        "--subreddit",
+        "-s",
+        help="Optional subreddit(s) to process. Repeat to pass multiple. If omitted, all subreddits are processed.",
+    ),
+) -> None:
+    """Load a subreddit's msgpack file and print all node text to stdout."""
+    command = ReportPotentialAcknowledgements(input_stage=ProcessingStage.NonQuestionsPruned)
+    command.row_count = row_count
+    if subreddit:
+        command.subreddits.extend(subreddit)
     command.execute(create_logger())
 
 
